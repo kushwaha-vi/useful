@@ -1,0 +1,34 @@
+
+vecotor<int> str;
+class Segment{
+public:
+    vector<int> tree;
+    Segment(int n){
+        tree.resize(4*n);
+    }
+
+    // here depending upon the question change the combine function.
+    int combine(int x,int y){
+        // write the relation that is holding the elements in tree.
+        some_funtion(x,y); //for example.
+    }
+
+    void build(int v,int tl,int tr){
+        if(tl==tr){
+            tree[v]= str[tl];        // this depend on question which array you are taking to construct tree. Here it is 'str'
+        }else{
+            int tm= tl+(tr-tl)/2;
+            build(v*2,tl,tm);
+            build(v*2+1,tm+1,tr);
+            tree[v]= combine(tree[v*2],tree[v*2+1]);
+        }
+    }
+
+    int query(int v,int tl,int tr,int l,int r){  // call by (1,0,n-1,l,r) l & r are given limits of interval 0-based indexing.
+        if(l>r) return 0;
+        if(tl==l && tr==r) return tree[v];
+
+        int tm= tl+(tr-tl)/2;
+        return combine(query(v*2,tl,tm,l,min(r,tm)),query(v*2+1,tm+1,tr,max(l,tm+1),r));
+    }
+};
