@@ -1,0 +1,26 @@
+
+
+int gcd(int ta,int tb){
+    int mxt,mnt;
+    if(ta>tb) mxt=ta,mnt=tb;
+    else mxt=tb,mnt=ta;
+
+    if(mnt==0) return mxt;
+    return gcd(mnt,mxt%mnt);
+}
+
+
+
+int gcd(int ta,int tb){
+    int mxt,mnt;
+    if(ta>tb) mxt=ta,mnt=tb;
+    else mxt=tb,mnt=ta;
+
+    int tmp;
+    while(mnt!=0){
+        tmp=mnt;
+        mnt=mxt%mnt;
+        mxt=tmp;
+    }
+    return mxt;
+}
