@@ -1,0 +1,124 @@
+#include <iostream>
+#include <cstdlib>
+#include <climits>
+#include <algorithm>
+#include <cstring>
+#include <cmath>
+#include <vector>
+#include <set>
+#include <map>
+#include <iterator>
+#include <string>
+#include <queue>
+#include <cstdio>
+
+using namespace std;
+
+typedef long long int64;
+
+#define mp make_pair
+#define pb push_back
+#define ms0(x) memset(x,0,sizeof(x));
+#define ms1(x) memset(x,-1,sizeof(x));
+
+#define mod 1
+#define EPS 1e-8
+
+//------------------------------------------------------------------------//
+
+typedef struct for_use{
+    int64 val;
+    int64 adj;
+}use;
+
+class segment{
+public:
+    vector<use> tree;
+    segment(int n){
+        tree.resize(4*n);
+    }
+
+    void push(int v){
+        tree[2*v].adj+=tree[v].adj;
+        tree[2*v+1].adj+=tree[v].adj;
+    }
+
+    void build(int v,int tl,int tr){
+        if(tl==tr){
+            tree[v].val=(int64)0;
+            tree[v].adj=(int64)0;
+        }else{
+            int tm= tl+ (tr-tl)/2;
+            build(2*v,tl,tm);
+            build(2*v+1,tm+1,tr);
+            tree[v].val= tree[2*v].val+tree[2*v+1].val;
+            tree[v].adj= tree[2*v].adj+tree[2*v+1].adj;
+        }
+        return;
+    }
+
+    void update(int v,int tl,int tr,int l,int r,int64 add){
+        if(tree[v].adj!=0){
+            tree[v].val= tree[v].val+ (tree[v].adj*(tr-tl+1));
+            if(tl!=tr){
+                push(v);
+            }
+            tree[v].adj=0;
+        }
+        if(l>r) return;
+        if(tl==l && tr==r){
+            tree[v].adj+= add;
+            if(tl!=tr){
+                push(v);
+            }
+            tree[v].val= tree[v].val+ tree[v].adj*(tr-tl+1);
+            tree[v].adj=0;
+            return;
+        }
+
+        int tm= tl+(tr-tl)/2;
+        update(2*v,tl,tm,l,min(tm,r),add);
+        update(2*v+1,tm+1,tr,max(l,tm+1),r,add);
+        tree[v].val= tree[2*v].val+tree[2*v+1].val;
+        return;
+    }
+
+    int64 query(int v,int tl,int tr,int l,int r){
+        if(tree[v].adj!=0){
+            tree[v].val= tree[v].val+ (tree[v].adj)*(tr-tl+1);
+            if(tl!=tr){
+                push(v);
+            }
+            tree[v].adj=0;
+        }
+        if(l>r) return 0;
+        if(tl==l && tr==r) return tree[v].val;
+        int tm= tl+(tr-tl)/2;
+
+        return (query(2*v,tl,tm,l,min(tm,r))+query(2*v+1,tm+1,tr,max(l,tm+1),r));
+    }
+};
+
+int main(){
+    int t;
+    cin >> t;
+    while(t--){
+        int n,c;
+        cin >> n >> c;
+        segment T(n);
+        T.build(1,0,n-1);
+        for(int i=0;i<c;i++){
+            int tp,x,y;
+            scanf("%d",&tp);
+            if(tp==0){
+                int64 ad;
+                scanf("%d%d%lld",&x,&y,&ad);
+                T.update(1,0,n-1,x-1,y-1,ad);
+            }else if(tp==1){
+                scanf("%d%d",&x,&y);
+                printf("%lld\n",T.query(1,0,n-1,x-1,y-1));
+            }
+        }
+    }
+    return 0;
+}
