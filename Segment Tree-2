@@ -1,0 +1,67 @@
+typedef struct use_me{
+    int lg1,lg2;
+}use;
+vector<int> str;
+
+bool rev(int x,int y){
+    return x>y;
+}
+
+class segment{
+public:
+    vector<use> tree;
+    segment(int n){
+        tree.resize(4*n);
+    }
+    use combine(use x,use y){
+       int tk[]= {x.lg1,x.lg2,y.lg1,y.lg2};
+       sort(tk,tk+4,rev);
+
+       use ret;
+       ret.lg1= tk[0];
+       ret.lg2= tk[1];
+       return ret;
+    }
+
+    void build(int v,int tl,int tr){
+        if(tl==tr){
+            tree[v].lg1= str[tl];
+            tree[v].lg2= 0;
+            return;
+        }
+
+        int tm= tl+(tr-tl)/2;
+        build(v*2,tl,tm);
+        build(v*2+1,tm+1,tr);
+        tree[v]= combine(tree[2*v],tree[2*v+1]);
+        return;
+    }
+
+    void update(int v,int tl,int tr,int pos,int val){
+        if(tl==tr){
+            tree[v].lg1= val;
+            tree[v].lg2=0;
+            return;
+        }
+
+        int tm= tl+(tr-tl)/2;
+        if(tm>=pos){
+            update(v*2,tl,tm,pos,val);
+        }else update(v*2+1,tm+1,tr,pos,val);
+
+        tree[v]= combine(tree[2*v],tree[2*v+1]);
+        return;
+    }
+
+    use query(int v,int tl,int tr,int l,int r){
+        if(l>r){
+            use ret;
+            ret.lg1=ret.lg2=0;
+            return ret;
+        }
+        if(tl==l && tr==r) return tree[v];
+
+        int tm= tl+(tr-tl)/2;
+        return combine(query(v*2,tl,tm,l,min(tm,r)),query(v*2+1,tm+1,tr,max(tm+1,l),r));
+    }
+};
