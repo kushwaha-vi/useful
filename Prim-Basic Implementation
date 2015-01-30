@@ -1,0 +1,55 @@
+int str[1002][3],mndis[1002];
+bool mrk[1002];
+
+int cal_dis(int x,int y,int p){
+    int sq=0;
+    for(int i=0;i<2;i++){
+        int tk= str[x][i]-str[y][i];
+        sq=sq+tk*tk;
+    }
+    int ret=ceil(sqrt((double)sq)*(double)p);
+    return ret;
+}
+
+int main(){
+    int t;
+    scanf("%d",&t);
+    for(int ts=1;ts<=t;ts++){
+        int n,p;
+        scanf("%d%d",&n,&p);
+        for(int i=0;i<n;i++){
+            scanf("%d%d",&str[i][0],&str[i][1]);
+        }
+
+        int64 ans=0;
+        for(int i=0;i<n;i++) mrk[i]=false,mndis[i]=INT_MAX;
+        mrk[0]=true;
+        for(int i=0;i<n;i++){
+            if(!mrk[i]){
+                mndis[i]=min(mndis[i],cal_dis(0,i,p));
+            }
+        }
+        while(true){
+            int id=-1,mn=INT_MAX;
+            for(int i=0;i<n;i++){
+                if(!mrk[i] && mn>mndis[i]){
+                    id=i;
+                    mn=mndis[i];
+                }
+            }
+
+            if(mn==INT_MAX) break;
+            ans+=mn;
+            ans%=mod;
+            mrk[id]=true;
+            for(int i=0;i<n;i++){
+                if(!mrk[i]){
+                    mndis[i]= min(mndis[i],cal_dis(id,i,p));
+                }
+            }
+        }
+
+        printf("Scenario #%d: %lld\n",ts,ans);
+    }
+    return 0;
+}
