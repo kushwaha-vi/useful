@@ -1,0 +1,183 @@
+//Min Heap class
+
+class MinHeap{
+private:
+    vector<int> tree;
+    int hpsize;
+
+    int getLeftChildIdx(int idx){
+        return 2*idx;
+    }
+    int getRightChildIdx(int idx){
+        return 2*idx+1;
+    }
+    int getParentIdx(int idx){
+        return idx/2;
+    }
+
+public:
+
+    MinHeap(int n){
+        tree.resize(4*n);
+        hpsize=0;
+    }
+
+    bool isEmpty(){
+        return (hpsize==0);
+    }
+
+    int getSize(){
+        return hpsize;
+    }
+
+    int getMinimum(){
+        if(isEmpty()){
+            return -1;
+        }
+        return tree[1];
+    }
+
+    void minheap_siftUp(int idx){
+        if(idx==1) return;
+        int prntidx= getParentIdx(idx);
+        if(tree[idx]<tree[prntidx]){
+            int tmp= tree[prntidx];
+            tree[prntidx]= tree[idx];
+            tree[idx]=tmp;
+            minheap_siftUp(prntidx);
+        }
+    }
+
+    void minheap_insert(int val){
+        hpsize++;
+        tree[hpsize]=val;
+        minheap_siftUp(hpsize);
+    }
+
+    void minheap_siftDown(int idx){
+        int lftchldidx,rhtchldidx,minidx;
+        lftchldidx= getLeftChildIdx(idx);
+        rhtchldidx= getRightChildIdx(idx);
+
+        if(rhtchldidx > hpsize){
+            if(lftchldidx > hpsize) return;
+            else minidx = lftchldidx;
+        }else{
+            if(tree[lftchldidx] <= tree[rhtchldidx]){
+                minidx= lftchldidx;
+            }else minidx= rhtchldidx;
+        }
+
+        if(tree[idx] > tree[minidx]){
+            int tmp= tree[idx];
+            tree[idx]= tree[minidx];
+            tree[minidx]= tmp;
+            minheap_siftDown(minidx);
+        }
+    }
+
+    void removeMin(){
+        if(isEmpty()) return;
+
+        tree[1]=tree[hpsize];
+        hpsize--;
+        if(hpsize>0) minheap_siftDown(1);
+    }
+
+    ~MinHeap(){
+        tree.clear();
+        hpsize=0;
+    }
+};
+
+
+//max-Heap class
+
+class MaxHeap{
+private:
+    vector<int> tree;
+    int hpsize;
+    int getLeftChildIdx(int idx){
+        return 2*idx;
+    }
+    int getRightChildIdx(int idx){
+        return 2*idx+1;
+    }
+    int getParentIdx(int idx){
+        return idx/2;
+    }
+
+public:
+
+    MaxHeap(int n){
+        tree.resize(4*n);
+        hpsize=0;
+    }
+
+    bool isEmpty(){
+        return (hpsize==0);
+    }
+
+    int getSize(){
+        return hpsize;
+    }
+
+    int getMaximum(){
+        if(isEmpty()){
+            return -1;
+        }
+        return tree[1];
+    }
+
+    void maxheap_siftUp(int idx){
+        if(idx==1) return;
+        int prntidx= getParentIdx(idx);
+        if(tree[idx]>tree[prntidx]){
+            int tmp= tree[prntidx];
+            tree[prntidx]= tree[idx];
+            tree[idx]=tmp;
+            maxheap_siftUp(prntidx);
+        }
+    }
+
+    void maxheap_insert(int val){
+        hpsize++;
+        tree[hpsize]=val;
+        maxheap_siftUp(hpsize);
+    }
+
+    void maxheap_siftDown(int idx){
+        int lftchldidx,rhtchldidx,maxidx;
+        lftchldidx= getLeftChildIdx(idx);
+        rhtchldidx= getRightChildIdx(idx);
+
+        if(rhtchldidx > hpsize){
+            if(lftchldidx > hpsize) return;
+            else maxidx = lftchldidx;
+        }else{
+            if(tree[lftchldidx] >= tree[rhtchldidx]){
+                maxidx= lftchldidx;
+            }else maxidx= rhtchldidx;
+        }
+
+        if(tree[idx] < tree[maxidx]){
+            int tmp= tree[idx];
+            tree[idx]= tree[maxidx];
+            tree[maxidx]= tmp;
+            maxheap_siftDown(maxidx);
+        }
+    }
+
+    void removeMax(){
+        if(isEmpty()) return;
+
+        tree[1]=tree[hpsize];
+        hpsize--;
+        if(hpsize>0) maxheap_siftDown(1);
+    }
+
+    ~MaxHeap(){
+        tree.clear();
+        hpsize=0;
+    }
+};
