@@ -1,0 +1,250 @@
+#include <iostream>
+#include <cstdlib>
+#include <climits>
+#include <algorithm>
+#include <cstring>
+#include <cmath>
+#include <vector>
+#include <set>
+#include <map>
+#include <iterator>
+#include <string>
+#include <cstdio>
+
+using namespace std;
+
+typedef long long int64;
+
+#define mp make_pair
+#define pb push_back
+#define ms0(x) memset(x,0,sizeof(x));
+#define ms1(x) memset(x,-1,sizeof(x));
+
+#define mod 1
+#define EPS 1e-8
+
+//------------------------------------------------------------------------//
+
+class treap{
+private:
+
+    typedef struct node{
+        int val,sze,prity;
+        int sum,pref,suff,bst;
+        node *lchild,*rchild;
+    }pnode;
+
+    pnode *root;
+
+    pnode *create(int vl,int py){
+        pnode *tmp= new pnode;
+        tmp->val=vl;
+        tmp->sze=1;
+        tmp->prity=py;
+        tmp->sum=vl;
+        tmp->bst=vl;
+        tmp->pref=vl;
+        tmp->suff=vl;
+        tmp->lchild=NULL;
+        tmp->rchild=NULL;
+
+        return tmp;
+    }
+
+    int gv_sze(pnode *head){
+        if(!head) return 0;
+        return head->sze;
+    }
+
+    int gv_sum(pnode *head){
+        if(!head) return 0;
+        return head->sum;
+    }
+
+    int gv_pref(pnode *head){
+        if(!head) return INT_MIN;
+        return head->pref;
+    }
+
+    int gv_suff(pnode *head){
+        if(!head) return INT_MIN;
+        return head->suff;
+    }
+
+    int gv_bst(pnode *head){
+        if(!head) return INT_MIN;
+        return head->bst;
+    }
+
+    void update(pnode *head){
+        if(!head) return;
+        head->sze= gv_sze(head->lchild)+gv_sze(head->rchild)+1;
+        head->sum= gv_sum(head->lchild)+gv_sum(head->rchild)+head->val;
+        head->pref= max(gv_pref(head->lchild), max(0,gv_pref(head->rchild))+gv_sum(head->lchild)+head->val);
+        head->suff= max(gv_suff(head->rchild), max(gv_suff(head->lchild),0)+gv_sum(head->rchild)+head->val);
+        head->bst=  max(max(gv_bst(head->lchild),gv_bst(head->rchild)),max(0,gv_suff(head->lchild))+max(0,gv_pref(head->rchild))+head->val);
+        return;
+    }
+
+    void split(pnode *head,pnode **lnode,pnode **rnode,int pos){
+        if(!(head)){
+            *lnode=NULL;
+            *rnode=NULL;
+            return;
+        }
+        if(gv_sze((head)->lchild) >= pos){
+            split((head)->lchild, lnode, &(head)->lchild, pos);
+            *rnode=head;
+        }else{
+            split((head)->rchild,&(head)->rchild,rnode,pos-gv_sze((head)->lchild)-1);
+            *lnode=head;
+        }
+        update(head);
+        return;
+    }
+
+    void ins_node(pnode **head,pnode *tmp,int pos){
+        if(!(*head)){
+            *head=tmp;
+        }else if((*head)->prity > tmp->prity){
+            if(gv_sze((*head)->lchild) >= pos){
+                ins_node(&(*head)->lchild,tmp,pos);
+            }else{
+                ins_node(&(*head)->rchild,tmp,pos-gv_sze((*head)->lchild)-1);
+            }
+        }else{
+            split(*head,&tmp->lchild,&tmp->rchild,pos);
+            *head=tmp;
+        }
+        update(*head);
+    }
+
+    void merge_node(pnode **head,pnode *lnode,pnode *rnode){
+        if(!lnode || !rnode){
+            *head= lnode?lnode:rnode;
+        }else if(lnode->prity > rnode->prity){
+            merge_node(&(lnode)->rchild,lnode->rchild,rnode);
+            *head= lnode;
+        }else{
+            merge_node(&(rnode)->lchild,lnode,rnode->lchild);
+            *head= rnode;
+        }
+
+        update(*head);
+        return;
+    }
+
+    void rem_node(pnode **head,int pos){
+        if(gv_sze((*head)->lchild)==pos){
+            merge_node(head,(*head)->lchild,(*head)->rchild);
+        }else{
+            if(gv_sze((*head)->lchild) > pos){
+                rem_node(&(*head)->lchild,pos);
+            }else{
+                rem_node(&(*head)->rchild,pos-gv_sze((*head)->lchild)-1);
+            }
+        }
+        update(*head);
+    }
+
+    void rep_node(pnode **head,int vl,int pos){
+        if(gv_sze((*head)->lchild)==pos){
+            (*head)->val=vl;
+        }else{
+            if(gv_sze((*head)->lchild) > pos){
+                rep_node(&(*head)->lchild,vl,pos);
+            }else{
+                rep_node(&(*head)->rchild,vl,pos-gv_sze((*head)->lchild)-1);
+            }
+        }
+        update(*head);
+    }
+
+    int query(pnode *head,int x,int y){
+        pnode *tmp1=NULL;
+        pnode *tmp2=NULL;
+        split(head,&tmp1,&tmp2,y);
+        pnode *tmp3=NULL;
+        pnode *tmp4=NULL;
+        split(tmp1,&tmp3,&tmp4,x-1);
+        int ret= tmp4->bst;
+        pnode *tmp5=NULL;
+        merge_node(&tmp5,tmp3,tmp4);
+        merge_node(&head,tmp5,tmp2);
+        return ret;
+    }
+
+public:
+
+    treap(){
+        root=NULL;
+    }
+
+    void do_insert(int vl,int py,int pos){
+        pnode *tmp= create(vl,py);
+        ins_node(&root,tmp,pos-1);
+        return;
+    }
+
+    void do_delete(int pos){
+        rem_node(&root,pos-1);
+        return;
+    }
+
+    void do_replace(int vl,int pos){
+        rep_node(&root,vl,pos-1);
+        return;
+    }
+
+    int do_query(int x,int y){
+        int ret= query(root,x,y);
+        return ret;
+    }
+};
+
+vector<int> rnd;
+
+int main(){
+    int n;
+    scanf("%d",&n);
+    for(int i=1;i<=200000;i++) rnd.pb(i);
+
+    int tk=0;
+    random_shuffle(rnd.begin(),rnd.end());
+    treap T;
+    for(int i=0;i<n;i++){
+        int x;
+        //printf("pop\n");
+        scanf("%d",&x);
+        T.do_insert(x,rnd[tk++],i+1);
+    }
+
+    int q;
+    char ch[2];
+    scanf("%d",&q);
+
+    for(int i=0;i<q;i++){
+        scanf("%s",ch);
+        int x,y;
+        switch(ch[0]){
+            case 'D':
+                scanf("%d",&x);
+                T.do_delete(x);
+                break;
+            case 'I':
+                scanf("%d%d",&x,&y);
+                T.do_insert(y,rnd[tk++],x);
+                break;
+            case 'R':
+                scanf("%d%d",&x,&y);
+                T.do_replace(y,x);
+                break;
+            case 'Q':
+                scanf("%d%d",&x,&y);
+                int ans=T.do_query(x,y);
+                printf("%d\n",ans);
+                break;
+        }
+    }
+    return 0;
+}
