@@ -1,0 +1,104 @@
+/*
+Winter Practice
+*/
+
+#include <cstdio>
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <vector>
+#include <algorithm>
+#include <climits>
+
+using namespace std;
+
+#define int64 long long
+#define ms0(a) memset(a,0,sizeof(a))
+#define ms1(a) memset(a,-1,sizeof(a))
+#define pb push_back
+#define mp make_pair
+
+vector<int> prm,segprm;
+
+
+void seive_normal(int n){
+	prm.clear();
+	if(n<=1) return;
+	vector<bool> mrk(n+1,true);
+	prm.pb(2);
+	mrk[0]=mrk[1]=false;
+	for(int i=3;i<=sqrt(n);i+=2){
+		if(mrk[i]){
+			for(int j=i*i;j<=n;j+=i){
+				mrk[j]=false;
+			}
+		}
+	}
+	
+	for(int i=3;i<=n;i+=2){
+		if(mrk[i]) prm.pb(i);
+	}
+	
+	cout << prm.size() << endl;
+	return;
+}
+
+void seive_seg(int l,int h,int b){
+	
+	// Calculate the primes upto square root of R (higher limit of question)
+	seive_normal(sqrt(h));
+	vector<int> qs(prm.size());
+	
+	// qs[]  stores the value for each prime where ((l+1+prm[])/(-2))%prm[]
+	for(int i=1;i<prm.size();i++){
+		qs[i]= ((l+prm[i]+1)/(-2))%prm[i];
+		if(qs[i]<0) qs[i]+=prm[i];
+	}
+	vector<bool> mrk(b+1); 
+	while(l<h){
+		for(int i=0;i<b;i++){
+			mrk[i]=true;
+		}
+		for(int i=1;i<qs.size();i++){
+			int x= qs[i];
+			for(int j=x;j<b;j+=prm[i]){
+				mrk[j]=false;
+			}		
+		}
+		
+		// for next set values of qs[]= (qs[]-b)%prm[];
+		for(int i=1;i<qs.size();i++){
+			qs[i]= (qs[i]-b)%prm[i];
+			if(qs[i]<0) qs[i]+=prm[i];
+		}
+		
+		int j=1;
+		for(int i=0;i<b;i++){
+			int nm= l+j;
+			if(mrk[i]) segprm.pb(nm);
+			j+=2;
+		
+		}			
+		l+= (2*b);
+	}			
+	return;	
+	
+}
+
+int main(){
+	freopen("input.txt","r",stdin);
+	freopen("out.txt","w",stdout);
+	
+	segprm.pb(2);segprm.pb(3);
+	segprm.pb(5);segprm.pb(7);
+	
+	//range L & R and also B (L>=10 && B must divide R-L) 
+	seive_seg(10,100,5);
+	seive_seg(100,1000,10);
+	seive_seg(1000,10000,100);
+	seive_seg(10000,100000,1000);
+	//seive_seg(100000,1000000,10000);
+	cout << segprm.size() << endl;
+	
+	return 0;
+}
